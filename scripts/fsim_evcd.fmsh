@@ -1,0 +1,13 @@
+set(var=[resources], messages=[all])
+set(var=[defines], format=[standard])
+set(var=[fdef], method=[fr], fr.fr=[../../scripts/faults.sff],abort=[error])
+set(var=[fsim],hyperfault=[0])
+
+design()
+
+addtst(test=[VortexSynthTest], stimtype=[vcd], stim=[../simulation/dump.evcd], dut.stim=[Testbench.vortex], stim_options=[+TESTNAME=vrtx])
+
+fsim()
+
+coverage(file=[SAF_coverage.sff])
+coverage(file=[SAF_coverage_hierachical.sff],hierarchical=[4])

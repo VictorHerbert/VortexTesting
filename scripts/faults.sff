@@ -1,0 +1,43 @@
+#*******************************************************************************
+# (c) 2017 Synopsys, Inc.
+#
+# This file and it's contents are proprietary to Synopsys, Inc. and may 
+# only be used pursuant to the terms and conditions of a written license 
+# agreement with Synopsys, Inc. All other use, reproduction, modification, 
+# or distribution of this file is strictly prohibited.
+#*******************************************************************************
+
+# Set fault generation constraints
+FaultGenerate
+{
+    NA [0, 1] { PORT "mem_req_ready" }
+    NA [0, 1] { PORT "mem_rsp_valid" }
+    NA [0, 1] { PORT "mem_rsp_data" }
+    NA [0, 1] { PORT "mem_rsp_tag" }
+    NA [0, 1] { PORT "dcr_wr_valid" }
+    NA [0, 1] { PORT "dcr_wr_addr" }
+    NA [0, 1] { PORT "dcr_wr_data" }
+    NA [0, 1] { PORT "mem_req_valid" }
+    NA [0, 1] { PORT "mem_req_rw" }
+    NA [0, 1] { PORT "mem_req_byteen" }
+    NA [0, 1] { PORT "mem_req_addr" }
+    NA [0, 1] { PORT "mem_req_data" }
+    NA [0, 1] { PORT "mem_req_tag" }
+    NA [0, 1] { PORT "mem_rsp_ready" }
+    NA [0, 1] { PORT "busy" }
+    NA [R, F] { PORT "mem_req_ready" }
+    NA [R, F] { PORT "mem_rsp_valid" }
+    NA [R, F] { PORT "mem_rsp_data" }
+    NA [R, F] { PORT "mem_rsp_tag" }
+    NA [R, F] { PORT "dcr_wr_valid" }
+    NA [R, F] { PORT "dcr_wr_addr" }
+    NA [R, F] { PORT "dcr_wr_data" }
+    NA [R, F] { PORT "mem_req_valid" }
+    NA [R, F] { PORT "mem_req_rw" }
+    NA [R, F] { PORT "mem_req_byteen" }
+    NA [R, F] { PORT "mem_req_addr" }
+    NA [R, F] { PORT "mem_req_data" }
+    NA [R, F] { PORT "mem_req_tag" }
+    NA [R, F] { PORT "mem_rsp_ready" }
+    NA [R, F] { PORT "busy" }
+}
