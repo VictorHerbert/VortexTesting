@@ -5,6 +5,14 @@ stimuli: /build/simulation/dump.evcd
 compilation: build/zoix/zoix.sim
 simulation: build/zoix/sim.zdb
 
+USE_GENERATED ?= 0
+
+ifeq ($(USE_GENERATED),1)
+    VORTEX_SRC = rtl/generated_vortex.v
+else
+    VORTEX_SRC = rtl/vortex.v
+endif
+
 RTL_SRCS = \
 	-I/vortex/hw/rtl/cache \
 	-I/vortex/hw/rtl/core \
@@ -20,17 +28,20 @@ RTL_SRCS = \
 	-DPLATFORM_MEMORY_DATA_WIDTH=32	\
 	-DPLATFORM_MEMORY_ADDR_WIDTH=16
 
-build/simulation/dump.evcd: rtl/vortex.v rtl/testbench.sv scripts/modelsim.tcl
+
+rtl/generated_vortex.v:
+	vortex/hw/scripts/sv2v.sh -tVortex \
+		-DFPU_FPNEW \
+		$(RTL_SRCS) \
+		-o../src/generated_vortex.v
+
+build/zoix/zoix.sim: $(VORTEX_SRC)
+	@cd build/zoix && \
+	zoix ../../$(VORTEX_SRC) ../../rtl/strobe.sv +top+Vortex+strobe +sv
+
+build/simulation/dump.evcd: $(VORTEX_SRC) rtl/testbench.sv scripts/modelsim.tcl
 	@cd build/simulation && \
 	vsim -c -do ../../scripts/modelsim.tcl
-
-build/zoix/zoix.sim: rtl/vortex.v
-	@cd build/zoix && \
-	zoix ../../rtl/vortex.v ../../rtl/strobe.sv +top+Vortex+strobe +sv
-
-compilation_procedural: rtl/generated_vortex.v
-	@cd build/zoix && \
-	zoix ../../rtl/generated_vortex.v ../../rtl/strobe.sv +top+Vortex+strobe +sv
 
 build/zoix/sim.zdb: build/zoix/zoix.sim /build/simulation/dump.evcd
 	@cd build/zoix && \
@@ -39,12 +50,6 @@ build/zoix/sim.zdb: build/zoix/zoix.sim /build/simulation/dump.evcd
 fault_simulation: build/zoix/sim.zdb scripts/fsim_evcd.fmsh scripts/faults.sff
 	@cd build/zoix && \
 	fmsh -load ../../scripts/fsim_evcd.fmsh
-
-src/generated_vortex.v:
-	vortex/hw/scripts/sv2v.sh -tVortex \
-		-DFPU_FPNEW \
-		$(RTL_SRCS) \
-		-o../src/generated_vortex.v
 
 clean:
 	@rm -rf build
