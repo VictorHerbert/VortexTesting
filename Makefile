@@ -6,6 +6,8 @@ compilation: build/zoix/zoix.sim
 simulation: build/zoix/sim.zdb
 
 USE_GENERATED ?= 0
+PLATFORM_MEMORY_DATA_WIDTH ?= 32
+PLATFORM_MEMORY_ADDR_WIDTH ?= 16
 
 ifeq ($(USE_GENERATED),1)
     VORTEX_SRC = rtl/generated_vortex.v
@@ -25,8 +27,8 @@ RTL_SRCS = \
 	-I/vortex/third_party/cvfpu/src/common_cells/include \
 	-I/vortex/third_party/cvfpu/src/common_cells/src \
 	-I/vortex/third_party/cvfpu/src/fpu_div_sqrt_mvp/hdl \
-	-DPLATFORM_MEMORY_DATA_WIDTH=32	\
-	-DPLATFORM_MEMORY_ADDR_WIDTH=16
+	-DPLATFORM_MEMORY_DATA_WIDTH=$(PLATFORM_MEMORY_DATA_WIDTH) \
+	-DPLATFORM_MEMORY_ADDR_WIDTH=$(PLATFORM_MEMORY_ADDR_WIDTH)
 
 
 rtl/generated_vortex.v:
