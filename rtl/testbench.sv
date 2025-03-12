@@ -2,11 +2,10 @@
 
 module Testbench;
 
-    // Local parameters
     localparam CLK_PERIOD = 10;
     localparam CLK_HALF_PERIOD = CLK_PERIOD / 2;
+    localparam RUNTIME = CLK_PERIOD*1e6;
 
-    // Testbench signals
     logic clk = 1, reset = 0;
     logic mem_req_ready;
     logic mem_rsp_valid;
@@ -24,7 +23,6 @@ module Testbench;
     wire mem_rsp_ready;
     wire busy;
     
-    // Instantiate the DUT (Device Under Test)
     Vortex vortex (
         .clk(clk),
         .reset(reset),
@@ -45,46 +43,44 @@ module Testbench;
         .busy(busy)
     );
 
-    // Clock generation
+    int counter = 0;
+
     initial forever #CLK_HALF_PERIOD clk = ~clk;
-    
-    // Reset sequence
+
+    initial forever #(RUNTIME/100) $display("%d %%", counter++);
+    initial #(RUNTIME) $finish;
+
+    task await_ticks(int ticks);
+        repeat(ticks) @(posedge clk);
+    endtask
+
     initial begin
         reset = 1;
-        #(3 * CLK_PERIOD);
+        await_ticks(3);
         reset = 0;
     end
 
-    // Task to generate a random memory response
-    task automatic generate_mem_rsp();
+    task automatic mem_random_write();
         begin
             mem_rsp_valid = 1;
             mem_rsp_data = $random;
             mem_rsp_tag = $random;
-            #CLK_PERIOD;
+            await_ticks(1);
             mem_rsp_valid = 0;
         end
     endtask
 
-    // Task to perform a DCR write
-    task automatic dcr_write(input [11:0] addr, input [31:0] data);
+    task automatic dcr_random_write();
         begin
             dcr_wr_valid = 1;
-            dcr_wr_addr = addr;
-            dcr_wr_data = data;
-            #CLK_PERIOD;
+            dcr_wr_addr = $random;
+            dcr_wr_data = $random;
+            await_ticks(1);
             dcr_wr_valid = 0;
         end
     endtask
 
     initial begin
-        $dumpfile("vortex_tb.vcd");
-        $dumpvars(0, vortex);
-    end
-
-    // Test stimulus
-    initial begin
-        // Initialize signals
         mem_req_ready = 0;
         mem_rsp_valid = 0;
         mem_rsp_data = 0;
@@ -93,26 +89,34 @@ module Testbench;
         dcr_wr_addr = 0;
         dcr_wr_data = 0;
         
-        // Wait for reset deassertion
-        #(4 * CLK_PERIOD);
+        await_ticks(5);
         
-        // Randomized memory request handling
-        repeat (5) begin
-            #($random % 20 + 10);
-            mem_req_ready = $random;
-        end
-        
-        // Generate memory response
-        #30;
-        generate_mem_rsp();
-        
-        // Perform a DCR write
-        #20;
-        dcr_write(12'h00A, 32'hDEADBEEF);
-        
-        // Wait and finish
-        #100;
-        $finish;
+        fork
+            begin
+                forever begin
+                    mem_req_ready = 1;
+                    await_ticks(2);
+                    mem_req_ready = 0;
+                    await_ticks(2);
+                end
+            end
+
+
+            begin
+                forever begin
+                    mem_random_write();
+                    await_ticks(5);
+                end
+            end
+
+            begin
+                forever begin
+                    dcr_random_write();
+                    await_ticks(7);
+                end
+            end
+        join
+
     end
 
 endmodule
