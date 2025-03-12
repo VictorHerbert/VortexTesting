@@ -1,7 +1,7 @@
 all: fault_simulation
 
 synthesis: src/generated_vortex.v
-stimuli: /build/simulation/dump.evcd
+stimuli: build/simulation/dump.evcd
 compilation: build/zoix/zoix.sim
 simulation: build/zoix/sim.zdb
 
@@ -38,14 +38,16 @@ rtl/generated_vortex.v:
 		-o../src/generated_vortex.v
 
 build/zoix/zoix.sim: $(VORTEX_SRC)
+	@mkdir -p build/zoix
 	@cd build/zoix && \
 	zoix ../../$(VORTEX_SRC) ../../rtl/strobe.sv +top+Vortex+strobe +sv
 
 build/simulation/dump.evcd: $(VORTEX_SRC) rtl/testbench.sv scripts/modelsim.tcl
+	@mkdir -p build/simulation
 	@cd build/simulation && \
 	vsim -c -do ../../scripts/modelsim.tcl
 
-build/zoix/sim.zdb: build/zoix/zoix.sim /build/simulation/dump.evcd
+build/zoix/sim.zdb: build/zoix/zoix.sim build/simulation/dump.evcd	
 	@cd build/zoix && \
 	./zoix.sim +vcd+file+../simulation/dump.evcd +vcd+dut+Vortex+Testbench.vortex
 
@@ -54,7 +56,4 @@ fault_simulation: build/zoix/sim.zdb scripts/fsim_evcd.fmsh scripts/faults.sff
 	fmsh -load ../../scripts/fsim_evcd.fmsh
 
 clean:
-	@rm -rf build
-	@mkdir -p build/simulation
-	@mkdir -p build/zoix
-	@mkdir -p build/logs
+	@rm -rf build	
